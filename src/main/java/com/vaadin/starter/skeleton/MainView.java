@@ -1,9 +1,5 @@
 package com.vaadin.starter.skeleton;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -37,31 +33,6 @@ public class MainView extends VerticalLayout {
 	 * Todo object storage
 	 */
 	private final TodoService todoService = new TodoService();
-
-	private enum Mode {
-		ALL, ACTIVE, COMPLETED
-	};
-
-	/**
-	 * Mode -> filter function
-	 */
-	final static Map<Mode, Predicate<? super Todo>> modeMap = new HashMap<>();
-
-	static {
-		modeMap.put(Mode.ALL, todo -> true);
-		modeMap.put(Mode.ACTIVE, todo -> !todo.isDone());
-		modeMap.put(Mode.COMPLETED, todo -> todo.isDone());
-	}
-
-	/**
-	 * Current active mode (filter)
-	 */
-	private Mode currentMode = Mode.ALL;
-
-	/**
-	 * Collection for all buttons for easy theming for the 'active' one
-	 */
-	private final Map<Mode, Button> modeButtons = new HashMap<>();
 
 	private TextField inputField;
 	private Checkbox selectAllChecbox;
@@ -146,29 +117,6 @@ public class MainView extends VerticalLayout {
 
 		numItemsLabel = new Span();
 
-		final Button toggleAll = new Button("All");
-		final Button toggleActive = new Button("Active");
-		final Button toggleCompleted = new Button("Completed");
-
-		final HorizontalLayout buttonsLayout = new HorizontalLayout(toggleAll, toggleActive, toggleCompleted);
-		modeButtons.put(Mode.ALL, toggleAll);
-		modeButtons.put(Mode.ACTIVE, toggleActive);
-		modeButtons.put(Mode.COMPLETED, toggleCompleted);
-		modeButtons.values().forEach(b -> b.getElement().setAttribute("theme", "tertiary"));
-
-		toggleAll.addClickListener(e -> {
-			currentMode = Mode.ALL;
-			refresh();
-		});
-		toggleActive.addClickListener(e -> {
-			currentMode = Mode.ACTIVE;
-			refresh();
-		});
-		toggleCompleted.addClickListener(e -> {
-			currentMode = Mode.COMPLETED;
-			refresh();
-		});
-
 		clearCompletedButton = new Button("Clear completed");
 		clearCompletedButton.getElement().setAttribute("theme", "tertiary");
 		clearCompletedButton.addClickListener(e -> clearCompleted());
@@ -177,7 +125,7 @@ public class MainView extends VerticalLayout {
 		footerLayout.setWidth("100%");
 		footerLayout.setClassName("footer");
 		footerLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-		footerLayout.add(numItemsLabel, buttonsLayout, clearCompletedButton);
+		footerLayout.add(numItemsLabel, clearCompletedButton);
 		footerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
 		return footerLayout;
@@ -188,7 +136,7 @@ public class MainView extends VerticalLayout {
 		// clear CB
 		selectAllChecbox.setValue(false);
 
-		todoService.removeIfFilter(modeMap.get(Mode.COMPLETED));
+		todoService.removeIfFilter(todo -> todo.isDone());
 		refresh();
 	}
 
@@ -215,13 +163,10 @@ public class MainView extends VerticalLayout {
 
 		footerLayout.setVisible(todoService.size() != 0);
 
-		final long count = todoService.getTodos().stream().filter(modeMap.get(Mode.ACTIVE)).count();
+		final long count = todoService.getTodos().stream().count();
 		numItemsLabel.setText(count + " items left");
 
-		modeButtons.values().forEach(c -> c.removeClassName("selected"));
-		modeButtons.get(currentMode).addClassName("selected");
-
-		final long completedCount = todoService.getTodos().stream().filter(modeMap.get(Mode.COMPLETED)).count();
+		final long completedCount = todoService.getTodos().stream().filter(todo -> todo.isDone()).count();
 
 		// don't remove from DOM to preserve layout
 		clearCompletedButton.getStyle().set("visibility", completedCount > 0 ? "visible" : "hidden");
@@ -232,8 +177,7 @@ public class MainView extends VerticalLayout {
 
 		itemsLayout.setVisible(todoService.size() != 0);
 
-		todoService.getTodos().stream().filter(modeMap.get(currentMode))
-				.forEach(t -> itemsLayout.add(new TodoLine(t, this::refresh, this::deleteTodo)));
+		todoService.getTodos().stream().forEach(t -> itemsLayout.add(new TodoLine(t, this::refresh, this::deleteTodo)));
 
 	}
 
