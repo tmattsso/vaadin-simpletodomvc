@@ -1,2 +1,1 @@
-# vaadin-simpletodomvc
-Simplified version of the TodoMCV app made with Vaadin Platform
+Demo app for Vaadin DX testing

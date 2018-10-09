@@ -1,0 +1,64 @@
+<custom-style> <!-- This is where your App's styling should go. You can use .css files too. -->
+<style>
+html {
+	height: auto;
+}
+
+body {
+	background-color: rgb(245, 245, 245);
+}
+
+.panel {
+	background-color: #FFF;
+	width: 550px;
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 25px 50px 0
+		rgba(0, 0, 0, 0.1);
+}
+
+.header {
+	padding: 0 var(--lumo-space-m);
+}
+
+h1 {
+	font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 100px;
+	font-weight: 100;
+	line-height: 1.4em;
+	margin: 0;
+	color: rgba(175, 47, 47, 0.15);
+}
+
+.mainsection {
+	border-top: 1px solid #e6e6e6;
+}
+
+p.done {
+	color: #d9d9d9;
+	text-decoration: line-through;
+}
+
+vaadin-button.selected {
+	border: 1px solid #d9d9d9;
+}
+
+.todo-line {
+	position: relative;
+}
+
+.todo-line vaadin-button.delete {
+	visibility: hidden;
+	position: absolute;
+	right: 0;
+	top: 2px;
+}
+
+.todo-line p {
+	margin-top: 0.75em;
+	margin-bottom: 0.75em;
+}
+
+.todo-line:hover vaadin-button.delete {
+	visibility: visible;
+}
+</style>
+</custom-style>
