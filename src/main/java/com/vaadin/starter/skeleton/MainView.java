@@ -163,7 +163,7 @@ public class MainView extends VerticalLayout {
 
 		footerLayout.setVisible(todoService.size() != 0);
 
-		final long count = todoService.getTodos().stream().count();
+		final long count = todoService.getTodos().stream().filter(todo -> !todo.isDone()).count();
 		numItemsLabel.setText(count + " items left");
 
 		final long completedCount = todoService.getTodos().stream().filter(todo -> todo.isDone()).count();
