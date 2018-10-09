@@ -1,8 +1,6 @@
 package com.vaadin.starter.skeleton;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -22,6 +20,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.starter.data.Todo;
+import com.vaadin.starter.data.TodoService;
 
 /**
  * The main view contains a button and a template element.
@@ -33,6 +32,11 @@ import com.vaadin.starter.data.Todo;
 public class MainView extends VerticalLayout {
 
 	private static final long serialVersionUID = 6424995339801673339L;
+
+	/**
+	 * Todo object storage
+	 */
+	private final TodoService todoService = new TodoService();
 
 	private enum Mode {
 		ALL, ACTIVE, COMPLETED
@@ -50,15 +54,10 @@ public class MainView extends VerticalLayout {
 	}
 
 	/**
-	 * Todo object storage
-	 */
-	private final List<Todo> todos = new LinkedList<>();
-	
-	/**
 	 * Current active mode (filter)
 	 */
 	private Mode currentMode = Mode.ALL;
-	
+
 	/**
 	 * Collection for all buttons for easy theming for the 'active' one
 	 */
@@ -67,13 +66,13 @@ public class MainView extends VerticalLayout {
 	private TextField inputField;
 	private Checkbox selectAllChecbox;
 	private final VerticalLayout itemsLayout;
-	
+
 	private HorizontalLayout footerLayout;
 	private Span numItemsLabel;
 	private Button clearCompletedButton;
 
 	public MainView() {
-		
+
 		setClassName("main-layout");
 		setWidth("100%");
 		setDefaultHorizontalComponentAlignment(Alignment.CENTER);
@@ -139,7 +138,7 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void markAllDone(Boolean done) {
-		todos.forEach(t -> t.setDone(done));
+		todoService.getTodos().forEach(t -> t.setDone(done));
 		refresh();
 	}
 
@@ -173,7 +172,7 @@ public class MainView extends VerticalLayout {
 		clearCompletedButton = new Button("Clear completed");
 		clearCompletedButton.getElement().setAttribute("theme", "tertiary");
 		clearCompletedButton.addClickListener(e -> clearCompleted());
-		
+
 		footerLayout = new HorizontalLayout();
 		footerLayout.setWidth("100%");
 		footerLayout.setClassName("footer");
@@ -189,7 +188,7 @@ public class MainView extends VerticalLayout {
 		// clear CB
 		selectAllChecbox.setValue(false);
 
-		todos.removeIf(modeMap.get(Mode.COMPLETED));
+		todoService.removeIfFilter(modeMap.get(Mode.COMPLETED));
 		refresh();
 	}
 
@@ -198,7 +197,7 @@ public class MainView extends VerticalLayout {
 		// clear CB
 		selectAllChecbox.setValue(false);
 
-		todos.add(new Todo(value));
+		todoService.addTodo(new Todo(value));
 		inputField.clear();
 		refresh();
 	}
@@ -206,7 +205,7 @@ public class MainView extends VerticalLayout {
 	private void refresh() {
 
 		// don't remove from DOM to preserve layout
-		selectAllChecbox.getStyle().set("visibility", todos.size() > 0 ? "visible" : "hidden");
+		selectAllChecbox.getStyle().set("visibility", todoService.size() > 0 ? "visible" : "hidden");
 
 		refreshItems();
 		refreshFooter();
@@ -214,15 +213,15 @@ public class MainView extends VerticalLayout {
 
 	private void refreshFooter() {
 
-		footerLayout.setVisible(todos.size() != 0);
+		footerLayout.setVisible(todoService.size() != 0);
 
-		final long count = todos.stream().filter(modeMap.get(Mode.ACTIVE)).count();
+		final long count = todoService.getTodos().stream().filter(modeMap.get(Mode.ACTIVE)).count();
 		numItemsLabel.setText(count + " items left");
 
 		modeButtons.values().forEach(c -> c.removeClassName("selected"));
 		modeButtons.get(currentMode).addClassName("selected");
 
-		final long completedCount = todos.stream().filter(modeMap.get(Mode.COMPLETED)).count();
+		final long completedCount = todoService.getTodos().stream().filter(modeMap.get(Mode.COMPLETED)).count();
 
 		// don't remove from DOM to preserve layout
 		clearCompletedButton.getStyle().set("visibility", completedCount > 0 ? "visible" : "hidden");
@@ -231,15 +230,15 @@ public class MainView extends VerticalLayout {
 	private void refreshItems() {
 		itemsLayout.removeAll();
 
-		itemsLayout.setVisible(todos.size() != 0);
+		itemsLayout.setVisible(todoService.size() != 0);
 
-		todos.stream().filter(modeMap.get(currentMode))
+		todoService.getTodos().stream().filter(modeMap.get(currentMode))
 				.forEach(t -> itemsLayout.add(new TodoLine(t, this::refresh, this::deleteTodo)));
 
 	}
 
 	void deleteTodo(Todo t) {
-		todos.remove(t);
+		todoService.remove(t);
 		refresh();
 	}
 }
