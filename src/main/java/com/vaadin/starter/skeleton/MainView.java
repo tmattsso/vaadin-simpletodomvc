@@ -38,6 +38,9 @@ public class MainView extends VerticalLayout {
 		ALL, ACTIVE, COMPLETED
 	};
 
+	/**
+	 * Mode -> filter function
+	 */
 	final static Map<Mode, Predicate<? super Todo>> modeMap = new HashMap<>();
 
 	static {
@@ -46,46 +49,60 @@ public class MainView extends VerticalLayout {
 		modeMap.put(Mode.COMPLETED, todo -> todo.isDone());
 	}
 
+	/**
+	 * Todo object storage
+	 */
 	private final List<Todo> todos = new LinkedList<>();
+	
+	/**
+	 * Current active mode (filter)
+	 */
 	private Mode currentMode = Mode.ALL;
+	
+	/**
+	 * Collection for all buttons for easy theming for the 'active' one
+	 */
 	private final Map<Mode, Button> modeButtons = new HashMap<>();
 
-	private Span numItemsLabel;
-	private final VerticalLayout itemsLayout;
 	private TextField inputField;
-	private HorizontalLayout footerLayout;
-	private Button clearCompletedButton;
 	private Checkbox selectAllChecbox;
+	private final VerticalLayout itemsLayout;
+	
+	private HorizontalLayout footerLayout;
+	private Span numItemsLabel;
+	private Button clearCompletedButton;
 
 	public MainView() {
+		
 		setClassName("main-layout");
-
 		setWidth("100%");
 		setDefaultHorizontalComponentAlignment(Alignment.CENTER);
 		setSpacing(true);
 
-		final VerticalLayout wrapper = new VerticalLayout();
-		wrapper.setWidth("500px");
-		wrapper.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+		// Horizontal size constraint wrapper
+		final Div horizontalWrapper = new Div();
+		horizontalWrapper.setWidth("500px");
 
 		final H1 header = new H1("todos");
 		header.addClassName("header");
-		wrapper.add(header);
+		horizontalWrapper.add(header);
 
-		final Div panelWrapper = new Div();
-		panelWrapper.setClassName("panel");
-		wrapper.add(panelWrapper);
+		// App content area (white area) wrapper
+		final Div contentWrapper = new Div();
+		contentWrapper.setClassName("panel");
+		horizontalWrapper.add(contentWrapper);
 
-		panelWrapper.add(buildHeader());
+		contentWrapper.add(buildHeader());
 
 		itemsLayout = new VerticalLayout();
 		itemsLayout.setWidth("100%");
 		itemsLayout.setClassName("mainsection");
-		panelWrapper.add(itemsLayout);
+		itemsLayout.setSpacing(false);
+		contentWrapper.add(itemsLayout);
 
-		panelWrapper.add(buildFooter());
+		contentWrapper.add(buildFooter());
 
-		add(wrapper);
+		add(horizontalWrapper);
 
 		refresh();
 
@@ -127,10 +144,6 @@ public class MainView extends VerticalLayout {
 	}
 
 	private Component buildFooter() {
-		footerLayout = new HorizontalLayout();
-		footerLayout.setWidth("100%");
-		footerLayout.setClassName("footer");
-		footerLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
 		numItemsLabel = new Span();
 
@@ -139,18 +152,10 @@ public class MainView extends VerticalLayout {
 		final Button toggleCompleted = new Button("Completed");
 
 		final HorizontalLayout buttonsLayout = new HorizontalLayout(toggleAll, toggleActive, toggleCompleted);
-
-		clearCompletedButton = new Button("Clear completed");
-
-		footerLayout.add(numItemsLabel, buttonsLayout, clearCompletedButton);
-		footerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
 		modeButtons.put(Mode.ALL, toggleAll);
 		modeButtons.put(Mode.ACTIVE, toggleActive);
 		modeButtons.put(Mode.COMPLETED, toggleCompleted);
-
 		modeButtons.values().forEach(b -> b.getElement().setAttribute("theme", "tertiary"));
-		clearCompletedButton.getElement().setAttribute("theme", "tertiary");
 
 		toggleAll.addClickListener(e -> {
 			currentMode = Mode.ALL;
@@ -164,7 +169,17 @@ public class MainView extends VerticalLayout {
 			currentMode = Mode.COMPLETED;
 			refresh();
 		});
+
+		clearCompletedButton = new Button("Clear completed");
+		clearCompletedButton.getElement().setAttribute("theme", "tertiary");
 		clearCompletedButton.addClickListener(e -> clearCompleted());
+		
+		footerLayout = new HorizontalLayout();
+		footerLayout.setWidth("100%");
+		footerLayout.setClassName("footer");
+		footerLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+		footerLayout.add(numItemsLabel, buttonsLayout, clearCompletedButton);
+		footerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
 		return footerLayout;
 	}
@@ -190,7 +205,7 @@ public class MainView extends VerticalLayout {
 
 	private void refresh() {
 
-		// don't remve from dom
+		// don't remove from DOM to preserve layout
 		selectAllChecbox.getStyle().set("visibility", todos.size() > 0 ? "visible" : "hidden");
 
 		refreshItems();
@@ -209,7 +224,7 @@ public class MainView extends VerticalLayout {
 
 		final long completedCount = todos.stream().filter(modeMap.get(Mode.COMPLETED)).count();
 
-		// don't remve from dom
+		// don't remove from DOM to preserve layout
 		clearCompletedButton.getStyle().set("visibility", completedCount > 0 ? "visible" : "hidden");
 	}
 

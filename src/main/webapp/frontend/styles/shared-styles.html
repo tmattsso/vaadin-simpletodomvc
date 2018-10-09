@@ -26,9 +26,15 @@ h1 {
 	line-height: 1.4em;
 	margin: 0;
 	color: rgba(175, 47, 47, 0.15);
+	width: 100%;
+	text-align: center;
 }
 
 .mainsection {
+	border-top: 1px solid #e6e6e6;
+}
+
+.footer {
 	border-top: 1px solid #e6e6e6;
 }
 
@@ -52,13 +58,13 @@ vaadin-button.selected {
 	top: 2px;
 }
 
+.todo-line:hover vaadin-button.delete {
+	visibility: visible;
+}
+
 .todo-line p {
 	margin-top: 0.75em;
 	margin-bottom: 0.75em;
-}
-
-.todo-line:hover vaadin-button.delete {
-	visibility: visible;
 }
 </style>
 </custom-style>
