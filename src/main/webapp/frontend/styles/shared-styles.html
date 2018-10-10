@@ -74,3 +74,22 @@ vaadin-button.selected {
 }
 </style>
 </custom-style>
+
+<dom-module id="my-theme-mod" theme-for="vaadin-text-field">
+  <template>
+    <style>
+    
+[part~="value"] {
+	background: #FFF; -
+	-lumo-border-radius: 0em;
+	--_lumo-text-field-overflow-mask-image: 0;
+}
+
+[part~="input-field"] {
+	padding:0;
+}
+
+</style>
+  </template>
+</dom-module>
+
